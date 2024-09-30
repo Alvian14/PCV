@@ -52,8 +52,8 @@ class Ui_MainWindow(object):
         self.menuHistogram_Equalization.setObjectName("menuHistogram_Equalization")
         self.menuHistogram_Equalization.triggered.connect(self.histogram_equalization)
 
-        self.menuAritmetical_Operation = QtWidgets.QMenu(self.menubar)
-        self.menuAritmetical_Operation.setObjectName("menuAritmetical_Operation")
+        # self.menuAritmetical_Operation = QtWidgets.QMenu(self.menubar)
+        # self.menuAritmetical_Operation.setObjectName("menuAritmetical_Operation")
 
         self.menuFilter = QtWidgets.QMenu(self.menubar)
         self.menuFilter.setObjectName("menuFilter")
@@ -230,24 +230,31 @@ class Ui_MainWindow(object):
 
         self.actionIdentity = QtWidgets.QAction(MainWindow)
         self.actionIdentity.setObjectName("actionIdentity")
+        self.actionIdentity.triggered.connect(self.identity_filter)
 
         self.actionSharpen = QtWidgets.QAction(MainWindow)
         self.actionSharpen.setObjectName("actionSharpen")
+        self.actionSharpen.triggered.connect(self.sharpen_filter)
 
         self.actionUnsharp_Masking = QtWidgets.QAction(MainWindow)
         self.actionUnsharp_Masking.setObjectName("actionUnsharp_Masking")
+        self.actionUnsharp_Masking.triggered.connect(self.unsharp_masking)
 
         self.actionAverage_Filter = QtWidgets.QAction(MainWindow)
         self.actionAverage_Filter.setObjectName("actionAverage_Filter")
+        self.actionAverage.triggered.connect(self.average_filter)
 
         self.actionLow_Pass_Filter = QtWidgets.QAction(MainWindow)
         self.actionLow_Pass_Filter.setObjectName("actionLow_Pass_Filter")
+        self.actionLow_Pass_Filter.triggered.connect(self.low_pass_filter)
 
         self.actionHight_Pass_Filter = QtWidgets.QAction(MainWindow)
         self.actionHight_Pass_Filter.setObjectName("actionHight_Pass_Filter")
+        self.actionHight_Pass_Filter.triggered.connect(self.high_pass_filter)
 
         self.actionBandstop_Filter = QtWidgets.QAction(MainWindow)
         self.actionBandstop_Filter.setObjectName("actionBandstop_Filter")
+        self.actionBandstop_Filter.triggered.connect(self.bandstop_filter)
 
         self.actionEdge_Detection_1 = QtWidgets.QAction(MainWindow)
         self.actionEdge_Detection_1.setObjectName("actionEdge_Detection_1")
@@ -260,14 +267,21 @@ class Ui_MainWindow(object):
 
         self.actionGaussian_Blur_3x3 = QtWidgets.QAction(MainWindow)
         self.actionGaussian_Blur_3x3.setObjectName("actionGaussian_Blur_3x3")
+        self.actionGaussian_Blur_3x3.triggered.connect(self.gaussian_blur_3x3)
 
         self.actionGaussian_Blur_3x5 = QtWidgets.QAction(MainWindow)
         self.actionGaussian_Blur_3x5.setObjectName("actionGaussian_Blur_3x5")
+        self.actionGaussian_Blur_3x5.triggered.connect(self.gaussian_blur_3x5)
 
         #Edge detection
         self.actionPrewitt = QtWidgets.QAction(MainWindow)
         self.actionPrewitt.setObjectName("actionPrewitt")
         self.actionPrewitt.triggered.connect(self.prewitt_edge_detection)
+
+        self.actionCanny = QtWidgets.QAction(MainWindow)
+        self.actionCanny.setObjectName("actionCanny")
+        self.actionCanny.triggered.connect(self.canny_edge_detection)
+
         self.actionSebel = QtWidgets.QAction(MainWindow)
         self.actionSebel.setObjectName("actionSebel")
         self.actionSebel.triggered.connect(self.sobel_edge_detection)
@@ -412,6 +426,7 @@ class Ui_MainWindow(object):
         self.menuFilter.addAction(self.actionHight_Pass_Filter)
         self.menuFilter.addAction(self.actionBandstop_Filter)
         self.menuEdge_Detection_2.addAction(self.actionPrewitt)
+        self.menuEdge_Detection_2.addAction(self.actionCanny)
         self.menuEdge_Detection_2.addAction(self.actionSebel)
         self.menuErosion.addAction(self.actionSquare_4)
         self.menuErosion.addAction(self.actionSquare_6)
@@ -430,7 +445,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuColors.menuAction())
         self.menubar.addAction(self.menuTentang.menuAction())
         self.menubar.addAction(self.menuHistogram_Equalization.menuAction())
-        self.menubar.addAction(self.menuAritmetical_Operation.menuAction())
+        # self.menubar.addAction(self.menuAritmetical_Operation.menuAction())
         self.menubar.addAction(self.menuFilter.menuAction())
         self.menubar.addAction(self.menuEdge_Detection_2.menuAction())
         self.menubar.addAction(self.menuMorfologi.menuAction())
@@ -468,7 +483,7 @@ class Ui_MainWindow(object):
         self.menuBit_Depth.setTitle(_translate("MainWindow", "Bit Depth"))
         self.menuTentang.setTitle(_translate("MainWindow", "Tentang"))
         self.menuHistogram_Equalization.setTitle(_translate("MainWindow", "Image Processing"))
-        self.menuAritmetical_Operation.setTitle(_translate("MainWindow", "Aritmetical Operation"))
+        # self.menuAritmetical_Operation.setTitle(_translate("MainWindow", "Aritmetical Operation"))
         self.menuFilter.setTitle(_translate("MainWindow", "Filter"))
         self.menuEdge_Detection.setTitle(_translate("MainWindow", "Edge Detection"))
         self.menuGaussian_Blur.setTitle(_translate("MainWindow", "Gaussian Blur"))
@@ -533,6 +548,7 @@ class Ui_MainWindow(object):
         self.actionGaussian_Blur_3x3.setText(_translate("MainWindow", "Gaussian Blur 3x3"))
         self.actionGaussian_Blur_3x5.setText(_translate("MainWindow", "Gaussian Blur 3x5"))
         self.actionPrewitt.setText(_translate("MainWindow", "Prewitt"))
+        self.actionCanny.setText(_translate("MainWindow", "Canny"))
         self.actionSebel.setText(_translate("MainWindow", "Sobel"))
         self.actionSquare_4.setText(_translate("MainWindow", "Square 3"))
         self.actionSquare_6.setText(_translate("MainWindow", "Square 5"))
@@ -959,6 +975,43 @@ class Ui_MainWindow(object):
 
         # Hapus file sementara
         os.remove(temp_file_path)
+
+    def canny_edge_detection(self):
+        # Konversi gambar ke grayscale
+        image = self.imagefile.convert("L")  # Pastikan gambar dalam mode grayscale
+        
+        # Konversi gambar ke array NumPy
+        image_np = np.array(image)
+        
+        # Aplikasi filter Canny
+        edges = cv2.Canny(image_np, 100, 200)  # Canny Edge Detection dengan threshold 100 dan 200
+        
+        # Konversi array hasil ke gambar
+        image_out = Image.fromarray(edges)
+        self.imageResult = image_out
+        
+        # Simpan gambar ke temporary file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            temp_file_path = temp_file.name
+            image_out.save(temp_file_path)
+
+        # Load gambar dari file sementara ke QPixmap
+        img_pixmap = QtGui.QPixmap(temp_file_path)
+
+        # Mendapatkan ukuran QGraphicsView
+        view_width = self.graphicsView_2.width()
+        view_height = self.graphicsView_2.height()
+
+        # Mengatur pixmap untuk skala agar sesuai dengan ukuran QGraphicsView dengan tetap menjaga rasio
+        scaled_pixmap = img_pixmap.scaled(view_width, view_height, QtCore.Qt.KeepAspectRatio)
+
+        self.sceneOutput.clear()  # Bersihkan konten sebelumnya di scene
+        self.sceneOutput.addPixmap(scaled_pixmap)
+        self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
+
+        # Hapus file sementara
+        os.remove(temp_file_path)
+
 
     def sobel_edge_detection(self):
         # Konversi gambar ke grayscale
@@ -2426,6 +2479,34 @@ class Ui_MainWindow(object):
 
         # Hapus file sementara
         os.remove(temp_file_path)
+    
+    def display_result(self, result):
+        # Konversi array hasil ke gambar
+        image_out = Image.fromarray(result.astype(np.uint8))
+        self.imageResult = image_out
+        
+        # Simpan gambar ke temporary file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            temp_file_path = temp_file.name
+            image_out.save(temp_file_path)
+
+        # Load gambar dari file sementara ke QPixmap
+        img_pixmap = QtGui.QPixmap(temp_file_path)
+
+        # Mendapatkan ukuran QGraphicsView
+        view_width = self.graphicsView_2.width()
+        view_height = self.graphicsView_2.height()
+
+        # Mengatur pixmap untuk skala agar sesuai dengan ukuran QGraphicsView dengan tetap menjaga rasio
+        scaled_pixmap = img_pixmap.scaled(view_width, view_height, QtCore.Qt.KeepAspectRatio)
+
+        self.sceneOutput.clear()  # Bersihkan konten sebelumnya di scene
+        self.sceneOutput.addPixmap(scaled_pixmap)
+        self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
+
+        # Hapus file sementara
+        os.remove(temp_file_path)
+
    
     #segmentasi
     def show_dialog_regiongrow(self):
@@ -2652,7 +2733,108 @@ class Ui_MainWindow(object):
         
         # delete temp file
         os.remove(temp_file_path)
+    
 
+    #filter
+    def identity_filter(self):
+        # Memuat gambar dan mengonversi ke numpy array
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Filter Identity (tidak ada perubahan pada gambar)
+        identity_kernel = np.array([[0, 0, 0], [0, 1, 0], [0, 0, 0]])
+        result = cv2.filter2D(image_np, -1, identity_kernel)
+        
+        self.display_result(result)
+
+    def sharpen_filter(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Kernel sharpening
+        sharpen_kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        result = cv2.filter2D(image_np, -1, sharpen_kernel)
+        
+        self.display_result(result)
+
+    def unsharp_masking(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Gaussian blur for unsharp masking
+        blurred = cv2.GaussianBlur(image_np, (9, 9), 10.0)
+        result = cv2.addWeighted(image_np, 1.5, blurred, -0.5, 0)
+        
+        self.display_result(result)
+
+    def average_filter(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Menggunakan filter rata-rata
+        result = cv2.blur(image_np, (3, 3))
+        
+        self.display_result(result)
+
+    def low_pass_filter(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Menggunakan filter Gaussian untuk low-pass filter
+        result = cv2.GaussianBlur(image_np, (5, 5), 0)
+        
+        self.display_result(result)
+
+    def high_pass_filter(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Filter high-pass (deteksi tepi sederhana)
+        kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
+        result = cv2.filter2D(image_np, -1, kernel)
+        
+        self.display_result(result)
+
+    def bandstop_filter(self):
+        image = self.imagefile.convert("L")
+        image_np = np.array(image)
+        
+        # Konversi ke frekuensi dengan DFT
+        dft = cv2.dft(np.float32(image_np), flags=cv2.DFT_COMPLEX_OUTPUT)
+        dft_shift = np.fft.fftshift(dft)
+        
+        # Membuat mask bandstop (sederhana)
+        rows, cols = image_np.shape
+        crow, ccol = rows // 2, cols // 2
+        mask = np.ones((rows, cols, 2), np.uint8)
+        r = 30  # Radius mask
+        mask[crow-r:crow+r, ccol-r:ccol+r] = 0
+        
+        # Aplikasi mask pada DFT
+        fshift = dft_shift * mask
+        f_ishift = np.fft.ifftshift(fshift)
+        result = cv2.idft(f_ishift)
+        result = cv2.magnitude(result[:, :, 0], result[:, :, 1])
+        
+        self.display_result(result)
+
+    def gaussian_blur_3x3(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Gaussian blur dengan kernel 3x3
+        result = cv2.GaussianBlur(image_np, (3, 3), 0)
+        
+        self.display_result(result)
+
+    def gaussian_blur_3x5(self):
+        image = self.imagefile
+        image_np = np.array(image)
+        
+        # Gaussian blur dengan kernel 3x5
+        result = cv2.GaussianBlur(image_np, (3, 5), 0)
+        
+        self.display_result(result)
 
 
 if __name__ == "__main__":
