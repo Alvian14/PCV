@@ -12,6 +12,7 @@ from cropdialog import CropDialog
 from tentang import tentangMain
 from contrast import ContrastDialog
 from menuSegmentasi import MenuSegmentasi as ms
+from aritmatika import Ui_Dialog
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -53,6 +54,10 @@ class Ui_MainWindow(object):
 
         self.menuAritmetical_Operation = QtWidgets.QMenu(self.menubar)
         self.menuAritmetical_Operation.setObjectName("menuAritmetical_Operation")
+        self.actionAritmatika = QtWidgets.QAction(MainWindow)
+        self.actionAritmatika.setObjectName("actionAritmatika")
+        self.actionAritmatika.triggered.connect(self.open_aritmatical)
+
 
         self.menuFilter = QtWidgets.QMenu(self.menubar)
         self.menuFilter.setObjectName("menuFilter")
@@ -442,6 +447,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuTentang.menuAction())
         self.menubar.addAction(self.menuHistogram_Equalization.menuAction())
         self.menubar.addAction(self.menuAritmetical_Operation.menuAction())
+        self.menuAritmetical_Operation.addAction(self.actionAritmatika)
         self.menubar.addAction(self.menuFilter.menuAction())
         self.menubar.addAction(self.menuEdge_Detection_2.menuAction())
         self.menubar.addAction(self.menuMorfologi.menuAction())
@@ -483,6 +489,7 @@ class Ui_MainWindow(object):
         self.menuGaussian_Blur.setTitle(_translate("MainWindow", "Gaussian Blur"))
         self.menuEdge_Detection_2.setTitle(_translate("MainWindow", "Edge Detection"))
         self.menuAritmetical_Operation.setTitle(_translate("MainWindow", "Aritmetical Operation"))
+        self.actionAritmatika.setText(_translate("MainWindow", "Aritmatika"))
         self.menuMorfologi.setTitle(_translate("MainWindow", "Morfologi"))
         self.menuErosion.setTitle(_translate("MainWindow", "Erosion"))
         self.menuDilation.setTitle(_translate("MainWindow", "Dilation"))
@@ -847,6 +854,14 @@ class Ui_MainWindow(object):
         self.linear_brightness(brigthness_value)
         dialog.accept()
     #end fuction saturation
+
+    #aritmatika
+    def open_aritmatical(self):
+        self.dialog_aritmatika = QDialog()
+        self.ui_aritmatika = Ui_Dialog()
+        self.ui_aritmatika.setupUi(self.dialog_aritmatika)
+        self.dialog_aritmatika.show()
+
 
     #functionn Contras
     def contrast(self, contrast_factor):
@@ -1334,7 +1349,6 @@ class Ui_MainWindow(object):
             self.scene.addPixmap(scaled_pixmap)
             self.graphicsView.setSceneRect(self.scene.itemsBoundingRect())
                
-
     def gamma_correction(self, gamma=1.0):
         image = self.imagefile
         image_np = np.array(image)
