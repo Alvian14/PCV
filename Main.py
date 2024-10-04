@@ -50,15 +50,12 @@ class Ui_MainWindow(object):
 
         self.menuHistogram_Equalization = QtWidgets.QMenu(self.menubar)
         self.menuHistogram_Equalization.setObjectName("menuHistogram_Equalization")
-        self.menuHistogram_Equalization.triggered.connect(self.histogram_equalization)
 
-        # self.menuAritmetical_Operation = QtWidgets.QMenu(self.menubar)
-        # self.menuAritmetical_Operation.setObjectName("menuAritmetical_Operation")
+        self.menuAritmetical_Operation = QtWidgets.QMenu(self.menubar)
+        self.menuAritmetical_Operation.setObjectName("menuAritmetical_Operation")
 
         self.menuFilter = QtWidgets.QMenu(self.menubar)
         self.menuFilter.setObjectName("menuFilter")
-        self.menuEdge_Detection = QtWidgets.QMenu(self.menuFilter)
-        self.menuEdge_Detection.setObjectName("menuEdge_Detection")
         self.menuGaussian_Blur = QtWidgets.QMenu(self.menuFilter)
         self.menuGaussian_Blur.setObjectName("menuGaussian_Blur")
         self.menuEdge_Detection_2 = QtWidgets.QMenu(self.menubar)
@@ -221,9 +218,12 @@ class Ui_MainWindow(object):
         #menu image processing
         self.actionHistogram_Equalization = QtWidgets.QAction(MainWindow)
         self.actionHistogram_Equalization.setObjectName("actionHistogram_Equalization")
+        self.actionHistogram_Equalization.triggered.connect(self.histogram_equalization)
+
         self.actionFuzzy_HE_RGB = QtWidgets.QAction(MainWindow)
         self.actionFuzzy_HE_RGB.setObjectName("actionFuzzy_HE_RGB")
         self.actionFuzzy_HE_RGB.triggered.connect(self.fhe_rgb)
+        
         self.actionFuzzy_Grayscale = QtWidgets.QAction(MainWindow)
         self.actionFuzzy_Grayscale.setObjectName("actionFuzzy_Grayscale")
         self.actionFuzzy_Grayscale.triggered.connect(self.fhe_grayscale)
@@ -411,13 +411,9 @@ class Ui_MainWindow(object):
         self.menuHistogram_Equalization.addAction(self.actionHistogram_Equalization)
         self.menuHistogram_Equalization.addAction(self.actionFuzzy_HE_RGB)
         self.menuHistogram_Equalization.addAction(self.actionFuzzy_Grayscale)
-        self.menuEdge_Detection.addAction(self.actionEdge_Detection_1)
-        self.menuEdge_Detection.addAction(self.actionEdge_Detection_2)
-        self.menuEdge_Detection.addAction(self.actionEdge_Detection_3)
         self.menuGaussian_Blur.addAction(self.actionGaussian_Blur_3x3)
         self.menuGaussian_Blur.addAction(self.actionGaussian_Blur_3x5)
         self.menuFilter.addAction(self.actionIdentity)
-        self.menuFilter.addAction(self.menuEdge_Detection.menuAction())
         self.menuFilter.addAction(self.actionSharpen)
         self.menuFilter.addAction(self.menuGaussian_Blur.menuAction())
         self.menuFilter.addAction(self.actionUnsharp_Masking)
@@ -445,7 +441,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuColors.menuAction())
         self.menubar.addAction(self.menuTentang.menuAction())
         self.menubar.addAction(self.menuHistogram_Equalization.menuAction())
-        # self.menubar.addAction(self.menuAritmetical_Operation.menuAction())
+        self.menubar.addAction(self.menuAritmetical_Operation.menuAction())
         self.menubar.addAction(self.menuFilter.menuAction())
         self.menubar.addAction(self.menuEdge_Detection_2.menuAction())
         self.menubar.addAction(self.menuMorfologi.menuAction())
@@ -483,11 +479,10 @@ class Ui_MainWindow(object):
         self.menuBit_Depth.setTitle(_translate("MainWindow", "Bit Depth"))
         self.menuTentang.setTitle(_translate("MainWindow", "Tentang"))
         self.menuHistogram_Equalization.setTitle(_translate("MainWindow", "Image Processing"))
-        # self.menuAritmetical_Operation.setTitle(_translate("MainWindow", "Aritmetical Operation"))
         self.menuFilter.setTitle(_translate("MainWindow", "Filter"))
-        self.menuEdge_Detection.setTitle(_translate("MainWindow", "Edge Detection"))
         self.menuGaussian_Blur.setTitle(_translate("MainWindow", "Gaussian Blur"))
         self.menuEdge_Detection_2.setTitle(_translate("MainWindow", "Edge Detection"))
+        self.menuAritmetical_Operation.setTitle(_translate("MainWindow", "Aritmetical Operation"))
         self.menuMorfologi.setTitle(_translate("MainWindow", "Morfologi"))
         self.menuErosion.setTitle(_translate("MainWindow", "Erosion"))
         self.menuDilation.setTitle(_translate("MainWindow", "Dilation"))
@@ -1012,7 +1007,6 @@ class Ui_MainWindow(object):
         # Hapus file sementara
         os.remove(temp_file_path)
 
-
     def sobel_edge_detection(self):
         # Konversi gambar ke grayscale
         image = self.imagefile.convert("L")  # Pastikan gambar dalam mode grayscale
@@ -1340,6 +1334,124 @@ class Ui_MainWindow(object):
             self.scene.addPixmap(scaled_pixmap)
             self.graphicsView.setSceneRect(self.scene.itemsBoundingRect())
                
+
+    def gamma_correction(self, gamma=1.0):
+        image = self.imagefile
+        image_np = np.array(image)
+
+        # Apply gamma correction
+        inv_gamma = 1.0 / gamma
+        gamma_corrected = np.array(255 * (image_np / 255) ** inv_gamma, dtype='uint8')
+
+        image_out = Image.fromarray(gamma_corrected)
+        self.imageResult = image_out
+
+        # Save the image to a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            temp_file_path = temp_file.name
+            image_out.save(temp_file_path)
+
+        # Load the image from the temporary file into QPixmap
+        img_pixmap = QtGui.QPixmap(temp_file_path)
+
+        # Get the size of the QGraphicsView
+        view_width = self.graphicsView_2.width()
+        view_height = self.graphicsView_2.height()
+
+        # Scale the pixmap to fit the QGraphicsView, preserving the aspect ratio
+        scaled_pixmap = img_pixmap.scaled(view_width, view_height, QtCore.Qt.KeepAspectRatio)
+
+        self.sceneOutput.clear()  # Clear any previous content in the scene
+        self.sceneOutput.addPixmap(scaled_pixmap)
+        self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
+
+        # delete temp file
+        os.remove(temp_file_path)
+
+    
+        def fuzzy_histogram_equalization_rgb(image):
+            # Konversi gambar dari BGR (OpenCV) ke RGB
+            img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            
+            # Pisahkan menjadi 3 channel: Red, Green, Blue
+            r, g, b = cv2.split(img_rgb)
+            
+            # Lakukan fuzzy histogram equalization untuk setiap channel
+            r_eq = fuzzy_histogram_equalization(r)
+            g_eq = fuzzy_histogram_equalization(g)
+            b_eq = fuzzy_histogram_equalization(b)
+            
+            # Gabungkan kembali channel-channel yang sudah diproses
+            img_eq = cv2.merge((r_eq, g_eq, b_eq))
+            
+            # Konversi kembali ke format BGR (untuk OpenCV)
+            img_eq_bgr = cv2.cvtColor(img_eq, cv2.COLOR_RGB2BGR)
+            
+            return img_eq_bgr
+
+        def fuzzy_histogram_equalization(channel):
+            # Ambil histogram
+            hist, bins = np.histogram(channel.flatten(), 256, [0, 256])
+            
+            # Fungsi keanggotaan fuzzy
+            fuzzy_hist = fuzzy_membership(hist)
+            
+            # Hitung cumulative distribution function (CDF)
+            cdf = fuzzy_hist.cumsum()
+            cdf_normalized = cdf * hist.max() / cdf.max()  # Normalisasi
+            
+            # Gunakan CDF untuk histogram equalization
+            cdf_m = np.ma.masked_equal(cdf, 0)
+            cdf_m = (cdf_m - cdf_m.min()) * 255 / (cdf_m.max() - cdf_m.min())
+            cdf_final = np.ma.filled(cdf_m, 0).astype('uint8')
+            
+            # Mapping nilai pixel berdasarkan CDF yang diubah
+            img_equalized = cdf_final[channel]
+            
+            return img_equalized
+
+        def fuzzy_membership(hist):
+            # Membuat fuzzy histogram dengan fungsi keanggotaan tertentu
+            # Misalnya, menggunakan fungsi sigmoid atau gaussian sebagai dasar fuzzy
+            fuzzy_hist = 1 / (1 + np.exp(-hist))  # Fungsi sigmoid
+            
+            # Normalisasi fuzzy histogram
+            fuzzy_hist = fuzzy_hist / fuzzy_hist.sum()
+            
+            return fuzzy_hist
+
+        # Load gambar
+        image = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
+
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # Terapkan fuzzy histogram equalization
+        fhe_rgb = fuzzy_histogram_equalization_rgb(image_rgb)
+
+        output_image = Image.fromarray(fhe_rgb)
+        self.imageResult = output_image
+
+        # Save image ke temporary file
+        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+            temp_file_path = temp_file.name
+            output_image.save(temp_file_path)
+        
+        # Load image dari temp file ke QPixmap
+        img_pixmap = QtGui.QPixmap(temp_file_path)
+
+        # Get ukuran QGraphicsView
+        view_width = self.graphicsView_2.width()
+        view_height = self.graphicsView_2.height()
+
+        # scale pixmap ke QGraphicView
+        scaled_pixmap = img_pixmap.scaled(view_width, view_height, QtCore.Qt.KeepAspectRatio)
+
+        self.sceneOutput.clear() #clear gambar yang ada di QGraphicview_2
+        self.sceneOutput.addPixmap(scaled_pixmap)
+        self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
+
+        os.remove(temp_file_path)
+       
     def histogram_equalization(self):
         image = cv2.imread(self.imagePath, cv2.IMREAD_GRAYSCALE)
 
@@ -1368,92 +1480,52 @@ class Ui_MainWindow(object):
         self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
 
         os.remove(temp_file_path)
-
-    def gamma_correction(self, gamma=1.0):
-        image = self.imagefile
-        image_np = np.array(image)
-
-        # Apply gamma correction
-        gamma_corrected = np.array(255 * (image_np / 255) ** gamma, dtype='uint8')
-
-        image_out = Image.fromarray(gamma_corrected)
-        self.imageResult = image_out
-
-        # Save the image to a temporary file
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-            temp_file_path = temp_file.name
-            image_out.save(temp_file_path)
-
-        # Load the image from the temporary file into QPixmap
-        img_pixmap = QtGui.QPixmap(temp_file_path)
-
-        # Get the size of the QGraphicsView
-        view_width = self.graphicsView_2.width()
-        view_height = self.graphicsView_2.height()
-
-        # Scale the pixmap to fit the QGraphicsView, preserving the aspect ratio
-        scaled_pixmap = img_pixmap.scaled(view_width, view_height, QtCore.Qt.KeepAspectRatio)
-
-        self.sceneOutput.clear()  # Clear any previous content in the scene
-        self.sceneOutput.addPixmap(scaled_pixmap)
-        self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
-
-        # delete temp file
-        os.remove(temp_file_path)
-
+    # Fuzzy Histogram Equalization Grayscal
     def fhe_grayscale(self):
-        def fuzzy_membership_function(x, mean, stddev):
-            epsilon = 1e-5 # Menambah epsilon agar tdk ada pembagian dengan nol
-            return np.exp(-((x - mean) ** 2) / (2 * (stddev ** 2 + epsilon)))
+        def fuzzy_histogram_equalization_grayscale(image):
+            # Ambil histogram dari gambar
+            hist, bins = np.histogram(image.flatten(), 256, [0, 256])
 
-        def fuzzy_histogram_equalization_grayscale(image, block_size=16):
-            # konversi gambar ke grayscale
-            if len(image.shape) == 3:
-                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            # Terapkan fuzzy histogram equalization
+            fuzzy_hist = fuzzy_membership(hist)
 
-            height, widht = image.shape #dapatkan dimensi gambar
+            # Hitung cumulative distribution function (CDF)
+            cdf = fuzzy_hist.cumsum()
+            cdf_normalized = cdf * hist.max() / cdf.max()  # Normalisasi
 
-            equalized_image = np.zeros_like(image, dtype=np.uint8) # Buat gambar yang telah di equalize
+            # Gunakan CDF untuk histogram equalization
+            cdf_m = np.ma.masked_equal(cdf, 0)
+            cdf_m = (cdf_m - cdf_m.min()) * 255 / (cdf_m.max() - cdf_m.min())
+            cdf_final = np.ma.filled(cdf_m, 0).astype('uint8')
 
-            # ukuran blok
-            block_height = block_size
-            block_widht = block_size
+            # Mapping nilai pixel berdasarkan CDF yang diubah
+            img_equalized = cdf_final[image]
 
-            for y in range(0, height, block_height):
-                for x in range(0, widht, block_widht):
-                    # definisi batas blok
-                    block = image[y:y+block_height, x:x+block_widht]
-                    if block.size == 0:
-                        continue
+            return img_equalized
 
-                    # hitung histogram lokal
-                    hist, bins = np.histogram(block.flatten(), bins=256, range=[0, 256])
-                    cdf = hist.cumsum()
-                    cdf_normalized = cdf * 256 / cdf[-1]
-                    equalized_block = np.interp(block.flatten(), bins[:-1], cdf_normalized).reshape(block.shape)
+        def fuzzy_membership(hist):
+            # Membuat fuzzy histogram dengan fungsi keanggotaan tertentu
+            # Menggunakan fungsi sigmoid sebagai fungsi keanggotaan fuzzy
+            fuzzy_hist = 1 / (1 + np.exp(-hist))
 
-                    # hitung keanggotaan fuzzy
-                    mean = np.mean(equalized_block)
-                    stddev = np.std(equalized_block)
-                    membership = fuzzy_membership_function(equalized_block, mean, stddev)
+            # Normalisasi fuzzy histogram
+            fuzzy_hist = fuzzy_hist / fuzzy_hist.sum()
 
-                    # Terapkan penyesuaian kontras fuzzy
-                    equalized_image[y:y+block_height, x:x+block_widht] = np.clip(equalized_block * membership, 0, 255).astype(np.uint8)
+            return fuzzy_hist
 
-            return equalized_image
+        # Load gambar grayscale
+        image = cv2.imread(self.imagePath, cv2.IMREAD_GRAYSCALE)
 
-        image = cv2.imread(self.imagePath) 
+        fhe_grayscale = fuzzy_histogram_equalization_grayscale(image)
 
-        fheg_image = fuzzy_histogram_equalization_grayscale(image) # Terapkan fhe
-
-        output_image = Image.fromarray(fheg_image)
+        output_image = Image.fromarray(fhe_grayscale)
         self.imageResult = output_image
 
         # Save image ke temporary file
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
             temp_file_path = temp_file.name
             output_image.save(temp_file_path)
-        
+
         # Load image dari temp file ke QPixmap
         img_pixmap = QtGui.QPixmap(temp_file_path)
 
@@ -1469,53 +1541,68 @@ class Ui_MainWindow(object):
         self.graphicsView_2.setSceneRect(self.sceneOutput.itemsBoundingRect())
 
         os.remove(temp_file_path)
-    
+    # Fuzzy Histogram Equalization RGB
     def fhe_rgb(self):
-        def fuzzy_membership_function(x, men, stddev):
-            epsilon = 1e-5
-            return np.exp(-((x - men) ** 2) / (2 * (stddev ** 2 + epsilon)))
-
-        def fuzzy_histogram_equalization_rgb(image, block_size=16):
-            height, widht, channels = image.shape
-
-            equalized_image = np.zeros_like(image, dtype=np.uint8)
-
-            for channel in range(channels):
-                channel_data = image[:, :, channel]
-                equalized_channel = np.zeros_like(channel_data, dtype=np.uint8)
-
-                block_height = block_size
-                block_widht = block_size
-
-                for y in range(0, height, block_height):
-                    for x in range(0, widht, block_widht):
-                        block = channel_data[y:y+block_height, x:x+block_widht]
-                        if block.size == 0:
-                            continue
-                        
-                        # hitung histogram lokal
-                        hist, bins = np.histogram(block.flatten(), bins=256, range=[0,256])
-                        cdf = hist.cumsum()
-                        cdf_normalized = cdf * 255 / cdf[-1]
-                        equalized_block = np.interp(block.flatten(), bins[:-1], cdf_normalized).reshape(block.shape)
-
-                        # hitung kranggotaan fuzzy
-                        mean = np.mean(equalized_block)
-                        stddev = np.std(equalized_block)
-                        membership = fuzzy_membership_function(equalized_block, mean, stddev)
-
-                        # terapkan penyesuaian kontras fuzzy
-                        equalized_channel[y:y+block_height, x:x+block_widht] = np.clip(equalized_block * membership, 0, 255).astype(np.uint8)
-
-                equalized_image[:, :, channel] = equalized_channel
+        def fuzzy_histogram_equalization_rgb(image):
+            # Konversi gambar dari BGR (OpenCV) ke RGB
+            img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             
-            return equalized_image
+            # Pisahkan menjadi 3 channel: Red, Green, Blue
+            r, g, b = cv2.split(img_rgb)
+            
+            # Lakukan fuzzy histogram equalization untuk setiap channel
+            r_eq = fuzzy_histogram_equalization(r)
+            g_eq = fuzzy_histogram_equalization(g)
+            b_eq = fuzzy_histogram_equalization(b)
+            
+            # Gabungkan kembali channel-channel yang sudah diproses
+            img_eq = cv2.merge((r_eq, g_eq, b_eq))
+            
+            # Konversi kembali ke format BGR (untuk OpenCV)
+            img_eq_bgr = cv2.cvtColor(img_eq, cv2.COLOR_RGB2BGR)
+            
+            return img_eq_bgr
 
-        image = cv2.imread(self.imagePath) 
+        def fuzzy_histogram_equalization(channel):
+            # Ambil histogram
+            hist, bins = np.histogram(channel.flatten(), 256, [0, 256])
+            
+            # Fungsi keanggotaan fuzzy
+            fuzzy_hist = fuzzy_membership(hist)
+            
+            # Hitung cumulative distribution function (CDF)
+            cdf = fuzzy_hist.cumsum()
+            cdf_normalized = cdf * hist.max() / cdf.max()  # Normalisasi
+            
+            # Gunakan CDF untuk histogram equalization
+            cdf_m = np.ma.masked_equal(cdf, 0)
+            cdf_m = (cdf_m - cdf_m.min()) * 255 / (cdf_m.max() - cdf_m.min())
+            cdf_final = np.ma.filled(cdf_m, 0).astype('uint8')
+            
+            # Mapping nilai pixel berdasarkan CDF yang diubah
+            img_equalized = cdf_final[channel]
+            
+            return img_equalized
 
-        fhe_image_rgb = fuzzy_histogram_equalization_rgb(image) # Terapkan fhe
+        def fuzzy_membership(hist):
+            # Membuat fuzzy histogram dengan fungsi keanggotaan tertentu
+            # Misalnya, menggunakan fungsi sigmoid atau gaussian sebagai dasar fuzzy
+            fuzzy_hist = 1 / (1 + np.exp(-hist))  # Fungsi sigmoid
+            
+            # Normalisasi fuzzy histogram
+            fuzzy_hist = fuzzy_hist / fuzzy_hist.sum()
+            
+            return fuzzy_hist
 
-        output_image = Image.fromarray(fhe_image_rgb)
+        # Load gambar
+        image = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
+
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        # Terapkan fuzzy histogram equalization
+        fhe_rgb = fuzzy_histogram_equalization_rgb(image_rgb)
+
+        output_image = Image.fromarray(fhe_rgb)
         self.imageResult = output_image
 
         # Save image ke temporary file
@@ -1539,7 +1626,6 @@ class Ui_MainWindow(object):
 
         os.remove(temp_file_path)
 
-       
     #start menu geometri   
     def rotasi(self):
         # Pastikan imagefile sudah dimuat
